@@ -1,0 +1,36 @@
+# BTC/USDT Intraday Monitor Configuration
+
+symbol: BTCUSDT
+interval: 5m
+
+# Data fetch settings
+data:
+  price_source: coingecko
+  futures_source: bybit
+  refresh_interval: 60
+  cache_ttl: 300
+
+# Alert thresholds (from research document)
+thresholds:
+  spread_multiple: 2.0
+  funding_rate_extreme: 0.001          # ±0.1%
+  oi_change_percent: 0.05              # ±5% in 30m
+  liquidation_volume_usd: 20           # >$20M
+  exchange_inflow_btc: 20000           # >20k BTC in 1h
+  sentiment_zscore: 2.0
+  atr_multiplier: 1.5
+  vwap_deviation_percent: 0.5
+  rsi_overbought: 70
+  rsi_oversold: 30
+
+# Notifications
+alerts:
+  enabled: true
+  channels:
+    - console
+
+# Logging
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: logs/monitor.log
