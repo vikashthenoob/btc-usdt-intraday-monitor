@@ -1,174 +1,338 @@
-# BTC/USDT Intraday Movement Monitor
+# BTC/USDT Intraday Monitor
 
-A real-time monitoring system for Bitcoin (BTC/USDT) intraday price movements using **free online data sources**. Tracks the top 10 intraday drivers as outlined in the research document.
+A real-time monitoring system for BTC/USDT trading pairs with technical analysis, alert generation, and liquidation tracking.
 
 ## Features
 
-- **Real-time price monitoring** via CoinGecko & Binance public APIs
-- **Technical indicators** (VWAP, ATR, RSI, Bollinger Bands)
-- **Funding rate tracking** via Bybit/OKX public endpoints
-- **Open interest metrics** from public data
-- **Alert system** with configurable thresholds
-- **Backtesting engine** for historical analysis
+### 📊 Technical Analysis
+- **Moving Averages**: SMA (Simple Moving Average) and EMA (Exponential Moving Average)
+- **RSI (Relative Strength Index)**: Overbought/oversold detection
+- **MACD (Moving Average Convergence Divergence)**: Trend confirmation
+- **Bollinger Bands**: Volatility and price level analysis
+- **ATR (Average True Range)**: Volatility measurement
 
-## Top 10 Intraday Drivers Monitored
+### 🚨 Alert System
+- Real-time price breakout alerts
+- RSI overbought/oversold conditions
+- MACD crossover signals
+- Bollinger Band violations
+- Liquidation spike detection
+- Funding rate extremes
+- Volume surge alerts
 
-1. **Order-book Liquidity Shocks** - Bid/ask spread extremes
-2. **Order Flow Imbalance** - VPIN-like toxicity metrics
-3. **Futures Funding Rate Extremes** - >±0.1% (8h normalized)
-4. **Open Interest Jumps/Drops** - ±5% in 30m
-5. **Liquidation Clusters** - >$20M in 30m
-6. **Exchange Net Flows** - >20k BTC inflow in 1h
-7. **Whale Transfers** - >1000 BTC transactions
-8. **News/Social Spikes** - Sentiment z-score >2
-9. **Cross-Market Triggers** - S&P move >1%, DXY move >1%
-10. **Technical Thresholds** - VWAP breaches, RSI extremes, Bollinger breaks
+### 💰 Market Data
+- Real-time price data from Bybit
+- Liquidation tracking
+- Funding rates
+- Open interest
+- Volume analysis
 
-## Quick Start
-
-### Installation
-
-```bash
-git clone https://github.com/vikashthenoob/btc-usdt-intraday-monitor.git
-cd btc-usdt-intraday-monitor
-pip install -r requirements.txt
-```
-
-### Run Live Monitor
-
-```bash
-python main.py --config config.yaml
-```
-
-### Run Backtester
-
-```bash
-python backtest.py --symbol BTCUSDT --interval 5m --days 7
-```
+### 🔔 Notifications (Optional)
+- Discord webhook integration
+- Telegram bot support
+- Email notifications
 
 ## Project Structure
 
 ```
-.
-├── main.py                    # Live monitoring entry point
-├── backtest.py               # Historical backtesting engine
-├── config.yaml               # Configuration file
-├── requirements.txt          # Python dependencies
-├── .env.example             # Environment variables template
+btc-usdt-intraday-monitor/
 ├── src/
 │   ├── __init__.py
-│   ├── data_fetchers/       # Free API integrations
-│   │   ├── coingecko.py     # CoinGecko price data
-│   │   ├── binance.py       # Binance spot/klines
-│   │   └── bybit.py         # Bybit funding rates & OI
-│   ├── indicators/          # Technical & on-chain signals
-│   │   ├── technical.py     # RSI, ATR, Bollinger Bands
-│   │   ├── microstructure.py # Order book analysis
-│   │   └── derivatives.py   # Funding, OI, liquidations
-│   └── alerts/              # Alert engine
-│       └── threshold_checker.py
-├── tests/
-│   ├── test_indicators.py
-│   └── test_fetchers.py
-└── .github/
-    └── workflows/
-        └── test.yml         # CI/CD pipeline
+│   ├── monitor.py                 # Main orchestrator
+│   ├── data_fetchers/
+│   │   ├── __init__.py
+│   │   └── bybit.py              # Bybit API integration
+│   ├── indicators/
+│   │   ├── __init__.py
+│   │   └── calculator.py         # Technical indicators
+│   └── alerts/
+│       ├── __init__.py
+│       └── alert_manager.py      # Alert management system
+├── config.py                      # Configuration settings
+├── requirements.txt               # Python dependencies
+├── .env.example                   # Environment variables template
+└── README.md                      # This file
 ```
 
-## Data Sources (All Free)
+## Installation
 
-| Data Type | Source | Endpoint |
-|-----------|--------|----------|
-| Price & Volume (1-5m) | CoinGecko, Binance API | Spot OHLCV |
-| Funding Rates | Bybit, OKX Public API | Perpetuals |
-| Open Interest | Bybit, Coinalyze | Global OI |
-| Order Book Depth | Binance API | Level II data |
-| Technical Analysis | Real-time ticks | Custom indicators |
+### Prerequisites
+- Python 3.8+
+- pip package manager
+
+### Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/vikashthenoob/btc-usdt-intraday-monitor.git
+cd btc-usdt-intraday-monitor
+```
+
+2. Create a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+4. Configure environment:
+```bash
+cp .env.example .env
+# Edit .env with your settings
+```
 
 ## Configuration
 
-Edit `config.yaml` to adjust:
+Edit `.env` file to customize settings:
 
-```yaml
-symbol: BTCUSDT
-interval: 5m
-
-thresholds:
-  funding_rate_extreme: 0.001      # ±0.1%
-  oi_change_percent: 0.05          # ±5% in 30m
-  liquidation_volume_usd: 20       # >$20M
-  exchange_inflow_btc: 20000       # >20k BTC in 1h
-  sentiment_zscore: 2.0            # Sentiment extremes
-  atr_multiplier: 1.5              # Volatility spikes
+### Monitoring Settings
+```env
+MONITOR_SYMBOL=BTCUSDT          # Trading pair to monitor
+CHECK_INTERVAL=60               # Seconds between checks
+MAX_PRICE_HISTORY=500           # Price points to keep in history
 ```
 
-## Example Usage
-
-### Get Real-time Price
-
-```python
-from src.data_fetchers.coingecko import CoinGeckoFetcher
-
-fetcher = CoinGeckoFetcher()
-price = fetcher.get_current_price('bitcoin')
-print(f"BTC Price: ${price}")
+### Indicator Settings
+```env
+SMA_PERIOD=20                   # Simple Moving Average period
+RSI_PERIOD=14                   # RSI period
+BOLLINGER_PERIOD=20             # Bollinger Bands period
+BOLLINGER_STD_DEV=2.0           # Standard deviations for bands
 ```
 
-### Analyze Funding Rates
-
-```python
-from src.data_fetchers.bybit import BybitFetcher
-
-fetcher = BybitFetcher()
-funding = fetcher.get_funding_rate('BTCUSDT')
-print(f"Funding Rate: {funding}")
+### Alert Thresholds
+```env
+RSI_OVERBOUGHT=70               # RSI overbought threshold
+RSI_OVERSOLD=30                 # RSI oversold threshold
+LIQUIDATION_THRESHOLD=1000000   # Liquidation volume threshold (USDT)
+FUNDING_RATE_THRESHOLD=0.001    # Funding rate threshold
 ```
 
-### Compute Technical Indicators
-
-```python
-from src.indicators.technical import TechnicalIndicators
-
-prices = [100, 101, 102, 103, 104, 105]
-rsi = TechnicalIndicators.rsi(prices, period=14)
-bb = TechnicalIndicators.bollinger_bands(prices, period=20)
-print(f"RSI: {rsi}, Bollinger: {bb}")
+### Notifications (Optional)
+```env
+ENABLE_NOTIFICATIONS=false
+DISCORD_WEBHOOK_URL=your_webhook_url
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_CHAT_ID=your_chat_id
 ```
 
-## Running Tests
+## Usage
+
+### Starting the Monitor
 
 ```bash
-pytest tests/ -v --cov=src/
+python -m src.monitor
 ```
 
-## Thresholds (Research-based)
+The monitor will:
+1. Connect to Bybit API
+2. Fetch market data at regular intervals
+3. Calculate technical indicators
+4. Evaluate trading conditions
+5. Generate alerts when conditions are met
 
-| Signal | Threshold | Action |
-|--------|-----------|--------|
-| Bid/ask spread | >2σ of hourly mean | Alert: Illiquidity |
-| Funding rate | >±0.1% (8h) | Alert: Extreme leverage |
-| Open Interest | ±5% in 30m | Alert: Large entry/exit |
-| Liquidations | >$20M in 30m | Alert: Cascade risk |
-| Exchange inflow | >20k BTC in 1h | Alert: Selling pressure |
-| Social sentiment | z-score >2 | Alert: Sentiment extreme |
-| Price move | >1.5×ATR | Alert: Volatility spike |
+### Programmatic Usage
 
-## Next Steps
+```python
+import asyncio
+from src.monitor import IntradrDayMonitor
 
-- [ ] Add WebSocket support for real-time updates
-- [ ] Implement ML-based signal filtering
-- [ ] Add Telegram/Discord notifications
-- [ ] Build web dashboard (FastAPI + React)
-- [ ] Deploy to cloud (AWS/GCP)
+async def main():
+    # Initialize monitor
+    monitor = IntradrDayMonitor(
+        symbol='BTCUSDT',
+        check_interval=60,
+        sma_period=20,
+        rsi_period=14
+    )
+    
+    # Subscribe to alerts
+    from src.alerts.alert_manager import AlertType
+    monitor.alert_manager.subscribe(
+        AlertType.RSI_OVERBOUGHT,
+        lambda alert: print(f"Alert: {alert.message}")
+    )
+    
+    # Start monitoring
+    await monitor.start()
 
-## Disclaimer
+if __name__ == '__main__':
+    asyncio.run(main())
+```
 
-**For educational purposes only.** Not financial advice. Do your own research before trading. Past performance does not guarantee future results.
+## API Reference
 
-## License
+### IndicatorCalculator
 
-MIT License - see LICENSE file
+```python
+from src.indicators.calculator import IndicatorCalculator
+
+calc = IndicatorCalculator()
+
+# SMA
+sma_values = calc.sma(prices, period=20)
+
+# RSI
+rsi_values = calc.rsi(prices, period=14)
+
+# MACD
+macd_line, signal_line, histogram = calc.macd(prices)
+
+# Bollinger Bands
+upper, middle, lower = calc.bollinger_bands(prices, period=20)
+
+# ATR
+atr_values = calc.atr(highs, lows, closes, period=14)
+```
+
+### AlertManager
+
+```python
+from src.alerts.alert_manager import AlertManager, AlertType, AlertSeverity
+
+alert_mgr = AlertManager()
+
+# Create alert
+alert = alert_mgr.create_alert(
+    AlertType.RSI_OVERBOUGHT,
+    AlertSeverity.WARNING,
+    'BTCUSDT',
+    'RSI above 70',
+    price=45000.00
+)
+
+# Get alerts
+alerts = alert_mgr.get_alerts(symbol='BTCUSDT', limit=10)
+
+# Get critical alerts
+critical = alert_mgr.get_critical_alerts()
+
+# Subscribe to alerts
+alert_mgr.subscribe(AlertType.RSI_OVERBOUGHT, callback_function)
+```
+
+### IntradrDayMonitor
+
+```python
+from src.monitor import IntradrDayMonitor
+
+monitor = IntradrDayMonitor()
+
+# Get current state
+state = monitor.get_current_state()
+
+# Get alerts summary
+summary = monitor.get_alerts_summary()
+
+# Stop monitoring
+monitor.stop()
+```
+
+## Alert Types
+
+| Alert Type | Description | Severity |
+|---|---|---|
+| `PRICE_BREAKOUT` | Price breaks support/resistance | WARNING |
+| `RSI_OVERBOUGHT` | RSI > 70 | WARNING |
+| `RSI_OVERSOLD` | RSI < 30 | WARNING |
+| `MACD_CROSSOVER` | MACD line crosses signal line | INFO |
+| `BOLLINGER_BAND_TOUCH` | Price touches band | INFO |
+| `LIQUIDATION_SPIKE` | High liquidation volume | CRITICAL |
+| `FUNDING_RATE_EXTREME` | Unusual funding rate | WARNING |
+| `VOLUME_SURGE` | Abnormal volume | INFO |
+
+## Performance
+
+- **Data Points Cached**: Up to 500 price points (~8 hours at 60s intervals)
+- **Check Interval**: Configurable, default 60 seconds
+- **Memory Usage**: ~10-15 MB typical
+- **API Rate**: Respects Bybit API rate limits
+
+## Error Handling
+
+The monitor includes comprehensive error handling:
+- Network failures are logged and recovered
+- Invalid data is skipped
+- Alerts are persisted even during errors
+- Automatic reconnection on API failures
+
+## Logging
+
+Configure logging via `.env`:
+
+```env
+LOG_LEVEL=INFO       # DEBUG, INFO, WARNING, ERROR, CRITICAL
+LOG_FILE=monitor.log # Log file path
+```
+
+Logs include:
+- Market data fetches
+- Indicator calculations
+- Alert generation
+- API errors
+- System events
+
+## Testing
+
+```bash
+# Run with DEBUG logging
+LOG_LEVEL=DEBUG python -m src.monitor
+
+# Test specific components
+python -c "from src.indicators.calculator import IndicatorCalculator; calc = IndicatorCalculator(); print(calc.sma([100, 101, 102, ...]))"
+```
+
+## Troubleshooting
+
+### No alerts generated
+- Check indicator calculations with debug logging
+- Verify alert thresholds in `.env`
+- Ensure sufficient price history (minimum 20 data points)
+
+### API connection errors
+- Verify internet connectivity
+- Check Bybit API status
+- Review API rate limits
+
+### High memory usage
+- Reduce `MAX_PRICE_HISTORY`
+- Lower `ALERT_RETENTION`
+- Increase `CHECK_INTERVAL`
+
+## Dependencies
+
+- **requests**: HTTP client for API calls
+- **aiohttp**: Async HTTP support
+- **python-dotenv**: Environment variable management
+- **pydantic**: Data validation
+- **pytz**: Timezone handling
+- **websockets**: WebSocket support (optional)
 
 ## Contributing
 
-Contributions welcome! Please submit PRs with tests.
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## License
+
+MIT License - See LICENSE file for details
+
+## Support
+
+For issues and feature requests, please open a GitHub issue.
+
+## Disclaimer
+
+This tool is for educational and informational purposes only. Trading cryptocurrencies carries risk. Use this tool at your own risk and conduct your own research before making trading decisions.
+
+---
+
+**Last Updated**: July 2026
+**Version**: 0.1.0
